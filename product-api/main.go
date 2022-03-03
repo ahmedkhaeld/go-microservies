@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/ahmedkhaeld/go-microservies/handlers"
+	"github.com/ahmedkhaeld/go-microservies/product-api/handlers"
+	"github.com/nicholasjackson/env"
 	"log"
 	"net/http"
 	"os"
@@ -10,16 +11,20 @@ import (
 	"time"
 )
 
+var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server")
+
 func main() {
+	err := env.Parse()
+	if err != nil {
+		return
+	}
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
-	hh := handlers.NewHello(l)
-	gh := handlers.NewGoodbye(l)
+	ph := handlers.NewProducts(l)
 
 	sm := http.NewServeMux()
-	sm.Handle("/", hh)
-	sm.Handle("/goodbye", gh)
+	sm.Handle("/", ph)
 	s := &http.Server{
-		Addr:         ":9090",
+		Addr:         *bindAddress,
 		Handler:      sm,
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
