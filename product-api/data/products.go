@@ -39,9 +39,7 @@ func GetProducts() Products {
 }
 func (p *Product) FromJSON(r io.Reader) error {
 	e := json.NewDecoder(r)
-	err := e.Decode(p)
-
-	return err
+	return e.Decode(p)
 }
 
 func AddProduct(p *Product) {

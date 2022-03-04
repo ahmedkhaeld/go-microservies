@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/ahmedkhaeld/go-microservies/product-api/handlers"
+	"github.com/gorilla/mux"
 	"github.com/nicholasjackson/env"
 	"log"
 	"net/http"
@@ -21,8 +22,21 @@ func main() {
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
 	ph := handlers.NewProducts(l)
 
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
+	// create a new mux router and register the handlers
+	sm := mux.NewRouter()
+
+	getRouter := sm.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/", ph.GetProducts)
+
+	putRouter := sm.Methods("PUT").Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProducts)
+	putRouter.Use(ph.MiddlewareValidateProduct)
+
+	postRouter := sm.Methods("POST").Subrouter()
+	postRouter.HandleFunc("/", ph.AddProduct)
+	postRouter.Use(ph.MiddlewareValidateProduct)
+
+	//sm.Handle("/products", ph).Methods("GET")
 	s := &http.Server{
 		Addr:         *bindAddress,
 		Handler:      sm,
